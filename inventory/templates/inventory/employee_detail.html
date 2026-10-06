@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load inventory_tags %}
+{% block title %}{{ object.full_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <div class="crumb"><a href="{% url 'employee_list' %}">Employees</a></div>
+    <h1>{{ object.full_name }}</h1>
+  </div>
+  <div class="actions">
+    {% if object.is_active and perms.inventory.add_assignment %}<a class="btn primary" href="{% url 'assignment_add' %}?employee={{ object.pk }}">Assign an asset</a>{% endif %}
+    {% if perms.inventory.change_employee %}<a class="btn" href="{% url 'employee_edit' object.pk %}">Edit</a>{% endif %}
+    {% if perms.inventory.delete_employee %}<a class="btn danger" href="{% url 'employee_delete' object.pk %}">Delete</a>{% endif %}
+  </div>
+</div>
+
+<div class="stack">
+  <section class="card">
+    <div class="card-head"><h2>Details</h2>{% if object.is_active %}<span class="badge info">Active</span>{% else %}<span class="badge muted">Inactive</span>{% endif %}</div>
+    <div class="card-body">
+      <dl class="facts">
+        <div><dt>Staff ID</dt><dd>{{ object.staff_id }}</dd></div>
+        <div><dt>Department</dt><dd>{{ object.department }}</dd></div>
+        <div><dt>Job title</dt><dd>{{ object.job_title|default:"-" }}</dd></div>
+        <div><dt>Email</dt><dd>{{ object.email|default:"-" }}</dd></div>
+        <div><dt>Phone</dt><dd>{{ object.phone|default:"-" }}</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Assets held now</h2></div>
+    {% if current %}
+    <div class="table-wrap"><table>
+      <thead><tr><th>Asset</th><th>Name</th><th>Since</th><th>Due back</th><th></th></tr></thead>
+      <tbody>
+        {% for a in current %}
+        <tr>
+          <td><a class="tag" href="{{ a.asset.get_absolute_url }}">{{ a.asset.asset_tag }}</a></td>
+          <td>{{ a.asset.name }}</td>
+          <td>{{ a.assigned_date|date:"d M Y" }}</td>
+          <td>{% if a.expected_return_date %}{{ a.expected_return_date|date:"d M Y" }}{% if a.is_overdue %} <span class="badge bad">Overdue</span>{% endif %}{% else %}-{% endif %}</td>
+          <td class="row-actions">{% if perms.inventory.change_assignment %}<a href="{% url 'assignment_return' a.pk %}">Record return</a>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table></div>
+    {% else %}<div class="empty">This employee is not holding any assets.</div>{% endif %}
+  </section>
+
+  {% if past %}
+  <section class="card">
+    <div class="card-head"><h2>Previously held</h2></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Asset</th><th>Name</th><th>Assigned</th><th>Returned</th></tr></thead>
+      <tbody>
+        {% for a in past %}
+        <tr>
+          <td><a class="tag" href="{{ a.asset.get_absolute_url }}">{{ a.asset.asset_tag }}</a></td>
+          <td>{{ a.asset.name }}</td>
+          <td>{{ a.assigned_date|date:"d M Y" }}</td>
+          <td>{{ a.returned_date|date:"d M Y" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table></div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

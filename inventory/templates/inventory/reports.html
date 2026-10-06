@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load inventory_tags %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Reports</h1>
+    <p>Choose a report, then view it, print it or download it as a spreadsheet (CSV).</p>
+  </div>
+</div>
+
+<section class="card no-print">
+  <form method="get" class="card-body">
+    <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+      {% for field in form %}
+      <div class="field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% for error in field.errors %}<span class="error">{{ error }}</span>{% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+    <p class="help small muted" style="margin-top:.7rem">Category, status and location apply to the inventory report. The date range applies to assignment and maintenance reports.</p>
+    <div class="form-foot">
+      <button class="btn primary" type="submit">Show report</button>
+      {% if rows is not None and headers %}<button class="btn" type="submit" name="export" value="csv">Download CSV</button>{% endif %}
+    </div>
+  </form>
+</section>
+
+{% if headers %}
+<section class="card" style="margin-top:1.1rem">
+  <div class="card-head">
+    <div>
+      <h2>{{ report_title }}</h2>
+      <span class="report-meta">{{ rows|length }} record{{ rows|length|pluralize }}. Generated {{ generated|date:"d M Y, H:i" }} by {{ generated_by.username }}</span>
+    </div>
+    <button class="btn small no-print" type="button" data-print>Print</button>
+  </div>
+  {% if rows %}
+  <div class="table-wrap"><table>
+    <thead><tr>{% for h in headers %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+    <tbody>
+      {% for row in rows %}<tr>{% for cell in row %}<td>{{ cell|cell }}</td>{% endfor %}</tr>{% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}<div class="empty">No records match these choices.</div>{% endif %}
+</section>
+{% endif %}
+{% endblock %}

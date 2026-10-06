@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load inventory_tags %}
+{% block title %}{{ object.name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <div class="crumb"><a href="{% url 'location_list' %}">Locations</a></div>
+    <h1>{{ object.name }}</h1>
+    <p>{{ object.building|default:"No building set" }}{% if object.floor %}, floor {{ object.floor }}{% endif %}</p>
+  </div>
+  <div class="actions">
+    {% if perms.inventory.change_location %}<a class="btn" href="{% url 'location_edit' object.pk %}">Edit</a>{% endif %}
+  </div>
+</div>
+<section class="card">
+  <div class="card-head"><h2>Assets kept here</h2><span class="muted small">{{ assets|length }} total</span></div>
+  {% if assets %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Tag</th><th>Name</th><th>Category</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for a in assets %}
+      <tr>
+        <td><a class="tag" href="{{ a.get_absolute_url }}">{{ a.asset_tag }}</a></td>
+        <td>{{ a.name }}</td>
+        <td>{{ a.category }}</td>
+        <td><span class="badge {{ a.status|badge_class }}">{{ a.get_status_display }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}<div class="empty">No assets are kept in this location.</div>{% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Not allowed{% endblock %}
+{% block content %}
+<div class="card"><div class="empty">
+  <h1>You don't have access to this page</h1>
+  <p style="margin:.6rem 0 1.2rem">Your role does not include this action. Ask an administrator if you need it.</p>
+  <a class="btn" href="{% url 'dashboard' %}">Back to dashboard</a>
+</div></div>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load inventory_tags %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Dashboard</h1>
+    <p>{{ today|date:"l, j F Y" }}</p>
+  </div>
+  <div class="actions">
+    {% if perms.inventory.add_assignment %}<a class="btn" href="{% url 'assignment_add' %}">Assign an asset</a>{% endif %}
+    {% if perms.inventory.add_asset %}<a class="btn primary" href="{% url 'asset_add' %}">Add asset</a>{% endif %}
+  </div>
+</div>
+
+<section class="card fleet" aria-label="Asset status overview">
+  <div class="fleet-top">
+    <div class="fleet-count">{{ total }}<small>{{ total|pluralize:"asset,assets" }} on record</small></div>
+    <div class="fleet-value"><strong>{{ total_value|naira }}</strong>purchase value of active assets</div>
+  </div>
+  {% if total %}
+  <div class="statusbar" role="img" aria-label="Assets by status">
+    {% for row in status_rows %}{% if row.count %}<span class="seg-{{ row.value }}" style="width:{{ row.percent }}%" title="{{ row.label }}: {{ row.count }}"></span>{% endif %}{% endfor %}
+  </div>
+  <div class="legend">
+    {% for row in status_rows %}
+    <a href="{% url 'asset_list' %}?status={{ row.value }}"><i class="seg-{{ row.value }}"></i>{{ row.label }} <b>{{ row.count }}</b></a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">No assets yet. Add your first asset to see the overview.</p>
+  {% endif %}
+  <div class="quick" style="margin-bottom:0">
+    <div><strong>{{ available }}</strong><span>ready to assign</span></div>
+    <div><strong>{{ assigned }}</strong><span>in use</span></div>
+    <div><strong>{{ in_maintenance }}</strong><span>being repaired</span></div>
+    <div><strong>{{ employee_count }}</strong><span>active employees</span></div>
+  </div>
+</section>
+
+<div class="grid-3" style="margin-top:1.1rem">
+  <section class="card">
+    <div class="card-head"><h2>Overdue returns</h2>{% if overdue %}<span class="badge bad">{{ overdue|length }}</span>{% endif %}</div>
+    <ul class="attn">
+      {% for a in overdue %}
+      <li>
+        <div class="row"><a class="tag" href="{{ a.get_absolute_url }}">{{ a.asset.asset_tag }}</a><span class="small muted">due {{ a.expected_return_date|date:"d M" }}</span></div>
+        <span class="small">{{ a.employee.full_name }}</span>
+      </li>
+      {% empty %}<li class="none">Nothing is overdue.</li>{% endfor %}
+    </ul>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Warranty ending in 60 days</h2></div>
+    <ul class="attn">
+      {% for a in warranty_soon %}
+      <li>
+        <div class="row"><a class="tag" href="{{ a.get_absolute_url }}">{{ a.asset_tag }}</a><span class="small muted">{{ a.warranty_expiry|date:"d M Y" }}</span></div>
+        <span class="small">{{ a.name }}</span>
+      </li>
+      {% empty %}<li class="none">No warranties ending soon.</li>{% endfor %}
+    </ul>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Open maintenance</h2></div>
+    <ul class="attn">
+      {% for m in open_maintenance %}
+      <li>
+        <div class="row"><a class="tag" href="{{ m.get_absolute_url }}">{{ m.asset.asset_tag }}</a><span class="badge {{ m.status|badge_class }}">{{ m.get_status_display }}</span></div>
+        <span class="small">{{ m.get_kind_display }}: {{ m.description|truncatechars:48 }}</span>
+      </li>
+      {% empty %}<li class="none">No open jobs.</li>{% endfor %}
+    </ul>
+  </section>
+</div>
+
+<div class="grid-2" style="margin-top:1.1rem">
+  <section class="card">
+    <div class="card-head"><h2>Assets by category</h2></div>
+    <div class="card-body">
+      {% if by_category %}
+      <ul class="bars">
+        {% for row in by_category %}
+        <li><a href="{% url 'asset_list' %}?category={{ row.obj.pk }}">{{ row.obj.name }}</a><span class="track"><span class="fill" style="width:{{ row.percent }}%"></span></span><span class="n">{{ row.obj.n }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="muted">Add assets to see the split by category.</p>{% endif %}
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Assets by location</h2></div>
+    <div class="card-body">
+      {% if by_location %}
+      <ul class="bars">
+        {% for row in by_location %}
+        <li><a href="{% url 'location_detail' row.obj.pk %}">{{ row.obj.name }}</a><span class="track"><span class="fill" style="width:{{ row.percent }}%"></span></span><span class="n">{{ row.obj.n }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="muted">Give assets a location to see where they are.</p>{% endif %}
+    </div>
+  </section>
+</div>
+
+<section class="card" style="margin-top:1.1rem">
+  <div class="card-head"><h2>Recent assignments</h2><a class="small" href="{% url 'assignment_list' %}">View all</a></div>
+  {% if recent_assignments %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Asset</th><th>Name</th><th>Assigned to</th><th>Assigned</th><th>State</th></tr></thead>
+    <tbody>
+      {% for a in recent_assignments %}
+      <tr>
+        <td><a class="tag" href="{{ a.get_absolute_url }}">{{ a.asset.asset_tag }}</a></td>
+        <td>{{ a.asset.name }}</td>
+        <td>{{ a.employee.full_name }}</td>
+        <td>{{ a.assigned_date|date:"d M Y" }}</td>
+        <td><span class="badge {{ a.state|badge_class }}">{{ a.state_label }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}<div class="empty">No assignments yet.</div>{% endif %}
+</section>
+{% endblock %}

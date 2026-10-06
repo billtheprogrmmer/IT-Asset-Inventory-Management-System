@@ -1,0 +1,70 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ITAIMS{% endblock %} | IT Asset Inventory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'inventory/app.css' %}">
+</head>
+<body>
+{% with url=request.resolver_match.url_name %}
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="{% url 'dashboard' %}">
+      <span class="brand-mark">IT</span>
+      <span class="brand-name">ITAIMS<span class="brand-sub">IT Asset Inventory</span></span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="{% url 'dashboard' %}" class="{% if url == 'dashboard' %}active{% endif %}">Dashboard</a>
+
+      <div class="nav-group">
+        <div class="nav-title">Inventory</div>
+        {% if perms.inventory.view_asset %}<a href="{% url 'asset_list' %}" class="{% if 'asset' in url %}active{% endif %}">Assets</a>{% endif %}
+        {% if perms.inventory.view_assignment %}<a href="{% url 'assignment_list' %}" class="{% if 'assignment' in url %}active{% endif %}">Assignments</a>{% endif %}
+        {% if perms.inventory.view_maintenance %}<a href="{% url 'maintenance_list' %}" class="{% if 'maintenance' in url %}active{% endif %}">Maintenance</a>{% endif %}
+        {% if perms.inventory.view_location %}<a href="{% url 'location_list' %}" class="{% if 'location' in url %}active{% endif %}">Locations</a>{% endif %}
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">People</div>
+        {% if perms.inventory.view_employee %}<a href="{% url 'employee_list' %}" class="{% if 'employee' in url %}active{% endif %}">Employees</a>{% endif %}
+        {% if perms.inventory.view_department %}<a href="{% url 'department_list' %}" class="{% if 'department' in url %}active{% endif %}">Departments</a>{% endif %}
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">Setup and reports</div>
+        {% if perms.inventory.view_category %}<a href="{% url 'category_list' %}" class="{% if 'category' in url %}active{% endif %}">Categories</a>{% endif %}
+        {% if perms.inventory.view_asset %}<a href="{% url 'reports' %}" class="{% if url == 'reports' %}active{% endif %}">Reports</a>{% endif %}
+        {% if user.is_staff %}<a href="{% url 'admin:index' %}">User accounts</a>{% endif %}
+      </div>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="who">{{ user.get_full_name|default:user.username }}</div>
+      <div class="role">{% if user.is_superuser %}Administrator{% else %}{{ user.groups.first.name|default:"No role assigned" }}{% endif %}</div>
+      <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit">Log out</button></form>
+    </div>
+  </aside>
+
+  <div class="content">
+    <div class="topbar">
+      <button type="button" id="menu-toggle" aria-label="Open menu">Menu</button>
+      <strong>ITAIMS</strong>
+    </div>
+    <main class="main"><div class="container">
+      {% if messages %}
+      <ul class="messages" role="status">
+        {% for message in messages %}<li class="message {{ message.tags }}"><span>{{ message }}</span><button type="button" aria-label="Dismiss">&times;</button></li>{% endfor %}
+      </ul>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </div></main>
+  </div>
+</div>
+{% endwith %}
+<script src="{% static 'inventory/app.js' %}"></script>
+</body>
+</html>

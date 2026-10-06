@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load inventory_tags %}
+{% block title %}Maintenance {{ object.asset.asset_tag }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <div class="crumb"><a href="{% url 'maintenance_list' %}">Maintenance</a></div>
+    <h1>{{ object.get_kind_display }}: {{ object.asset.name }}</h1>
+  </div>
+  <div class="actions">
+    {% if perms.inventory.change_maintenance %}<a class="btn" href="{% url 'maintenance_edit' object.pk %}">Edit</a>{% endif %}
+    {% if perms.inventory.delete_maintenance %}<a class="btn danger" href="{% url 'maintenance_delete' object.pk %}">Delete</a>{% endif %}
+  </div>
+</div>
+<div class="card form-card">
+  <div class="card-head"><h2>Job details</h2><span class="badge {{ object.status|badge_class }}">{{ object.get_status_display }}</span></div>
+  <div class="card-body">
+    <dl class="facts">
+      <div><dt>Asset</dt><dd><a class="tag" href="{{ object.asset.get_absolute_url }}">{{ object.asset.asset_tag }}</a></dd></div>
+      <div><dt>Technician</dt><dd>{{ object.technician|default:"-" }}</dd></div>
+      <div><dt>Reported</dt><dd>{{ object.date_reported|date:"d M Y" }}</dd></div>
+      <div><dt>Completed</dt><dd>{{ object.date_completed|date:"d M Y"|default:"-" }}</dd></div>
+      <div><dt>Cost</dt><dd>{% if object.cost %}{{ object.cost|naira }}{% else %}-{% endif %}</dd></div>
+      <div class="wide"><dt>Work described</dt><dd>{{ object.description|linebreaksbr }}</dd></div>
+    </dl>
+  </div>
+</div>
+{% endblock %}

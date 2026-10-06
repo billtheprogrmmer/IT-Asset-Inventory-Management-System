@@ -1,0 +1,20 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Label {{ object.asset_tag }}</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'inventory/app.css' %}"></head>
+<body>
+<div class="label-sheet"><div>
+  <div class="label-print">
+    <div class="org">Property of the organisation. Report loss to the IT desk.</div>
+    <div class="num">{{ object.asset_tag }}</div>
+    <strong>{{ object.name }}</strong>
+    <dl>
+      <dt>Serial</dt><dd>{{ object.serial_number }}</dd>
+      <dt>Category</dt><dd>{{ object.category }}</dd>
+      {% if object.location %}<dt>Location</dt><dd>{{ object.location.name }}</dd>{% endif %}
+    </dl>
+  </div>
+  <p class="no-print" style="text-align:center;margin-top:1rem"><button class="btn primary" data-print>Print label</button></p>
+</div></div>
+<script src="{% static 'inventory/app.js' %}"></script>
+</body></html>

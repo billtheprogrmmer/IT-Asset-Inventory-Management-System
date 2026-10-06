@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load inventory_tags %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ title }}</h1>
+    {% if subtitle %}<p>{{ subtitle }}</p>{% endif %}
+  </div>
+  <div class="actions">
+    {% if can_add and add_url %}<a class="btn primary" href="{% url add_url %}">{{ add_label }}</a>{% endif %}
+  </div>
+</div>
+
+<div class="card">
+  {% if filter_form %}
+  <form method="get" class="filters" role="search">
+    {% for field in filter_form %}
+      <label class="sr-only" for="{{ field.id_for_label }}" style="position:absolute;left:-9999px">{{ field.label }}</label>{{ field }}
+    {% endfor %}
+    <button class="btn small" type="submit">Search</button>
+    {% if request.GET %}<a class="clear" href="{{ request.path }}">Clear</a>{% endif %}
+  </form>
+  {% endif %}
+
+  {% if object_list %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          {% for col in columns %}<th class="{% if col.align == 'right' %}right{% endif %}">{{ col.label }}</th>{% endfor %}
+          {% if edit_url or delete_url or row_action_url %}<th></th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for obj in object_list %}
+        <tr>
+          {% for col in columns %}
+          {% with value=obj|resolve:col.field %}
+          <td class="{% if col.align == 'right' %}right{% endif %}">
+            {% if col.kind == "badge" %}
+              <span class="badge {{ value|badge_class }}">{{ obj|resolve:col.display }}</span>
+            {% elif col.kind == "active" %}
+              {% if value %}<span class="badge info">Active</span>{% else %}<span class="badge muted">Inactive</span>{% endif %}
+            {% elif col.kind == "money" %}
+              {% if value == "" %}<span class="muted">&ndash;</span>{% else %}{{ value|naira }}{% endif %}
+            {% elif col.kind == "date" %}
+              {% if value == "" %}<span class="muted">&ndash;</span>{% else %}{{ value|date:"d M Y" }}{% endif %}
+            {% elif col.kind == "tag" %}
+              {% if col.link %}<a class="tag" href="{% url col.link obj.pk %}">{{ value }}</a>{% else %}<span class="tag">{{ value }}</span>{% endif %}
+            {% else %}
+              {% if value == "" %}<span class="muted">&ndash;</span>
+              {% elif col.link %}<a href="{% url col.link obj.pk %}"><strong>{{ value }}</strong></a>
+              {% else %}{{ value }}{% endif %}
+            {% endif %}
+          </td>
+          {% endwith %}
+          {% endfor %}
+          {% if edit_url or delete_url or row_action_url %}
+          <td class="row-actions">
+            {% if row_action_url and can_change and obj|resolve:row_action_if %}<a href="{% url row_action_url obj.pk %}">{{ row_action_label }}</a>{% endif %}
+            {% if edit_url and can_change %}<a href="{% url edit_url obj.pk %}">Edit</a>{% endif %}
+            {% if delete_url and can_delete %}<a class="danger" href="{% url delete_url obj.pk %}">Delete</a>{% endif %}
+          </td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if is_paginated or total_count %}
+  <div class="pager">
+    <span>{{ page_obj.start_index }}&ndash;{{ page_obj.end_index }} of {{ total_count }}</span>
+    <span>
+      {% if page_obj.has_previous %}<a href="{% page_url page_obj.previous_page_number %}">Previous</a>{% endif %}
+      <span class="cur">{{ page_obj.number }}</span>
+      {% if page_obj.has_next %}<a href="{% page_url page_obj.next_page_number %}">Next</a>{% endif %}
+    </span>
+  </div>
+  {% endif %}
+  {% else %}
+  <div class="empty">
+    <p>{{ empty_message }}</p>
+    {% if can_add and add_url and not request.GET %}<p style="margin-top:.6rem"><a href="{% url add_url %}">{{ add_label }}</a></p>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

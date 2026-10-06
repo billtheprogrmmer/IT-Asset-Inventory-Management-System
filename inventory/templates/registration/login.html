@@ -1,0 +1,43 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log in | ITAIMS</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'inventory/app.css' %}">
+</head>
+<body>
+<div class="login-page">
+  <section class="login-side">
+    <div class="brand"><span class="brand-mark">IT</span><span class="brand-name">ITAIMS</span></div>
+    <div>
+      <h1>Know where every device is.</h1>
+      <p>Register equipment, hand it out, log repairs and see what is available, all in one place.</p>
+    </div>
+    <div class="login-tags"><span class="tag">ITA-00001</span><span class="tag">ITA-00002</span><span class="tag">ITA-00003</span></div>
+  </section>
+  <section class="login-form">
+    <div class="card">
+      <h2>Log in</h2>
+      <form method="post">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="form-errors">Username or password is wrong. Check both and try again.</div>{% endif %}
+        <div class="stack">
+          <div class="field">
+            <label for="id_username">Username</label>
+            <input class="input" type="text" name="username" id="id_username" autofocus autocomplete="username" required>
+          </div>
+          <div class="field">
+            <label for="id_password">Password</label>
+            <input class="input" type="password" name="password" id="id_password" autocomplete="current-password" required>
+          </div>
+          <input type="hidden" name="next" value="{{ next }}">
+          <button class="btn primary" type="submit" style="justify-content:center">Log in</button>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+</body>
+</html>
